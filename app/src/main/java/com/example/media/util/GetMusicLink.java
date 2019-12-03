@@ -12,7 +12,19 @@ public class GetMusicLink {
         System.out.println(json);
         SongList songList = gson.fromJson(json,SongList.class);
         String songinfo = GetMusic.getMusicInfo(songList.getSong().get(0).getSongid());
+        System.out.println(songinfo);
         SongInfo songInfo = gson.fromJson(songinfo,SongInfo.class);
         return songInfo.getBitrate().getFile_link();
+    }
+
+    public static String GetMusciName(String songName){
+        System.out.println(songName);
+        String json = GetMusic.getMusicList(songName);
+        Gson gson = new Gson();
+        System.out.println(json);
+        SongList songList = gson.fromJson(json,SongList.class);
+        String songinfo = GetMusic.getMusicInfo(songList.getSong().get(0).getSongid());
+        SongInfo songInfo = gson.fromJson(songinfo,SongInfo.class);
+        return songInfo.getSonginfo().getTitle();
     }
 }

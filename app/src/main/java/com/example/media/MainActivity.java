@@ -25,9 +25,11 @@ import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
+import com.example.media.model.SongList;
 import com.example.media.util.GetMusic;
 import com.example.media.util.GetMusicLink;
 import com.example.media.util.Mediaplayer_servlet;
+import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -85,6 +87,7 @@ public class MainActivity extends AppCompatActivity {
                 if(keyCode == KeyEvent.KEYCODE_ENTER){
                     if(event.getAction()==KeyEvent.ACTION_DOWN){
                         Intent intent = new Intent(MainActivity.this,music_player.class);
+                        String name=GetMusic.getMusicList(editText_findsong.getText().toString());
                         intent.putExtra("songName",editText_findsong.getText().toString());
                         startActivity(intent);
 

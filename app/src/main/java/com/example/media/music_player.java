@@ -14,6 +14,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -25,6 +26,7 @@ import com.example.media.util.Mediaplayer_servlet;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -41,17 +43,38 @@ public class music_player extends AppCompatActivity {
     boolean run_service = false;
     ArrayList<String> songlist = null;
     int pos = 0;
+    int GET_TITLE_NAME = 98;
+    boolean need_get_longtime = true;
+    boolean need_add_nowtime = false;
     boolean status = true;//true顺序，false随机
     Handler han = new Handler(){
         @Override
         public void handleMessage(@NonNull Message msg) {
             if(msg.what == BAR_CHANGE){
-                int long_time = 0;long_time= mediaplayer.getlong();
+                System.out.println("sleep");
+
+                int long_time = 0;long_time=mediaplayer.getlong();
                 int now_time = -1;now_time=mediaplayer.getnowtime();
                 if(long_time!=0&&now_time!=-1){
                     bar.setMax(long_time);
                     bar.setProgress(now_time);
                 }
+//                if(need_get_longtime){
+//                    int i = mediaplayer.getlong();
+//                    System.out.println(i);
+//                    if(i!=0){
+//                        bar.setMax(i);
+//                        need_get_longtime=false;
+//                    }
+//                }
+//                if(!need_get_longtime&&need_add_nowtime){
+//                    bar.setProgress(bar.getProgress()+1000);
+//                }
+
+            }
+            if(msg.what==GET_TITLE_NAME){
+                TextView textView = findViewById(R.id.music_title);
+                textView.setText(songName);
             }
         }
     };
@@ -62,7 +85,7 @@ public class music_player extends AppCompatActivity {
             mediaplayer = (Mediaplayer_servlet.Mediaplayer) service;
             if(find_song){
             mediaplayer.setsong(songName);}else {
-                mediaplayer.setsong(songlist.get(pos));
+                mediaplayer.setsong(songlist,pos);
             }
         }
 
@@ -77,8 +100,6 @@ public class music_player extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.music_player);
-
-
         songName = getIntent().getStringExtra("songName");
 //        songUrl = GetMusicLink.GetSongLink(songName);
         Intent intent = new Intent(music_player.this,Mediaplayer_servlet.class);
@@ -95,6 +116,7 @@ public class music_player extends AppCompatActivity {
             Bundle bundle = getIntent().getExtras();
             songlist= bundle.getStringArrayList("songlist");
             pos=bundle.getInt("pos");
+            songName=songlist.get(pos);
             System.out.println(pos);
         }
         findViewById(R.id.music_play).setOnClickListener(new View.OnClickListener() {
@@ -109,12 +131,14 @@ public class music_player extends AppCompatActivity {
                         temp =false;
                     }
                 }
+                need_add_nowtime = true;
             }
         });
         findViewById(R.id.music_pause).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mediaplayer.pause();
+                need_add_nowtime=false;
             }
         });
         new Thread(){
@@ -128,8 +152,19 @@ public class music_player extends AppCompatActivity {
                     }
                     Message msg = new Message();
                     msg.what = BAR_CHANGE;
+                    if(mediaplayer!=null){
                     han.sendMessage(msg);}
+                }
 
+            }
+        }.start();
+        new Thread(){
+            @Override
+            public void run() {
+                songName = GetMusicLink.GetMusciName(songName);
+                Message msg = new Message();
+                msg.what=GET_TITLE_NAME;
+                han.sendMessage(msg);
             }
         }.start();
 //        new Thread(){
@@ -146,13 +181,16 @@ public class music_player extends AppCompatActivity {
 //                }
 //            }
 //        }.start();
-        findViewById(R.id.music_status).setOnClickListener(new View.OnClickListener() {
+        final Button button=findViewById(R.id.music_status);
+        button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(status){
                     status=false;
+                    button.setText("随机");
                 }else{
                     status=true;
+                    button.setText("顺序");
                 }
             }
         });
@@ -166,18 +204,79 @@ public class music_player extends AppCompatActivity {
                         return ;
                     }else{
                         pos=pos-1;
-                        mediaplayer.rs();
-                        mediaplayer.setsong(songlist.get(pos));
-                        boolean temp = true;
-                        while (temp){
-                            if(!mediaplayer.isplaying()){
-                                mediaplayer.play();
-                            }else{
-                                temp=false;
-                            }
-                        }
+                        mediaplayer.lastmusic(songlist.get(pos));
                     }
+                }else{
+                    boolean have_ran = true;
+                    while (have_ran){
+                        Random i = new Random();
+                        int j = i.nextInt();
+                        if(j<0){
+                            continue;
+                        }
+                        j=j%songlist.size();
+                        if(j==pos){
+                            continue;
+                        }
+                        pos=j;
+                        have_ran=false;
+                    }
+                    mediaplayer.lastmusic(songlist.get(pos));
                 }
+                songName=songlist.get(pos);
+                new Thread(){
+                    @Override
+                    public void run() {
+                        songName = GetMusicLink.GetMusciName(songName);
+                        Message msg= new Message();
+                        msg.what=GET_TITLE_NAME;
+                        han.sendMessage(msg);
+                    }
+
+                    }.start();
+            }
+        });
+
+        findViewById(R.id.music_nextmusic).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(status){
+                    if(pos==songlist.size()-1){
+                        Toast.makeText(music_player.this,"后面没有了",Toast.LENGTH_SHORT).show();
+                        return;
+                    }else{
+                        pos=pos+1;
+                        mediaplayer.lastmusic(songlist.get(pos));
+                    }
+                }else{
+
+                    boolean have_ran = true;
+                    while (have_ran){
+                        Random i = new Random();
+                        int j = i.nextInt();
+                        if(j<0){
+                            continue;
+                        }
+                        j=j%songlist.size();
+                        if(j==pos){
+                            continue;
+                        }
+                        pos=j;
+                        have_ran=false;
+                    }
+                    mediaplayer.lastmusic(songlist.get(pos));
+                }
+                songName=songlist.get(pos);
+                new Thread(){
+                    @Override
+                    public void run() {
+                        songName = GetMusicLink.GetMusciName(songName);
+                        Message msg= new Message();
+                        msg.what=GET_TITLE_NAME;
+                        han.sendMessage(msg);
+                    }
+
+                }.start();
             }
         });
 
@@ -191,7 +290,8 @@ public class music_player extends AppCompatActivity {
         bar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                mediaplayer.setnowtime(progress);
+                if(fromUser){
+                mediaplayer.setnowtime(progress);}
             }
 
             @Override
