@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+    <android.widget.Toolbar
+        android:layout_width="match_parent"
+        android:layout_height="50sp"
+        android:layout_alignParentTop="true"
+        android:id="@+id/activity_main_toolbar_above">
+        <EditText
+            android:layout_width="230sp"
+            android:layout_height="match_parent"
+            android:hint="输入要搜索的歌曲"
+            android:id="@+id/activity_findsong"
+            android:singleLine="true"
+            />
+        <ImageView
+            android:layout_width="50sp"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="119dp"
+            android:src="@drawable/musiclistadd"
+            android:id="@+id/activity_main_musiclistadd"/>
+    </android.widget.Toolbar>
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1sp"
+        android:background="#000000"
+        android:layout_below="@id/activity_main_toolbar_above"/>
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/activity_main_relate_botton"
+        android:layout_below="@id/activity_main_toolbar_above"
+        android:id="@+id/activity_main_listview"
+        />
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/activity_main_relate_botton"
+        android:layout_alignParentTop="true"
+        android:id="@+id/activity_main_Franmelayout"
+        />
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1sp"
+        android:background="#000000"
+        android:layout_above="@id/activity_main_relate_botton"/>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="50sp"
+        android:layout_alignParentBottom="true"
+        android:id="@+id/activity_main_relate_botton"
+        >
+        <ImageView
+            android:layout_width="50sp"
+            android:layout_height="match_parent"
+            android:src="@drawable/music"
+            android:layout_alignParentLeft="true"
+            android:id="@+id/activity_main_Imageview_music"
+            />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_toRightOf="@id/activity_main_Imageview_music"
+            android:text="当前未播放歌曲"
+            android:gravity="center_vertical"/>
+
+    </RelativeLayout>
+
+
+</RelativeLayout>
